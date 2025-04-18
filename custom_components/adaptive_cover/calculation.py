@@ -396,7 +396,7 @@ class ClimateCoverState(NormalCoverState):
                 # If it's summer, return 45 degrees
                 return 45 / degrees * 100
             return super().get_state()
-        return 80 / degrees * 100
+        return self.cover.default
 
     def tilt_without_presence(self, degrees: int) -> int:
         """Determine state for tilted blinds without occupants."""
