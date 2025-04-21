@@ -386,24 +386,25 @@ class ClimateCoverState(NormalCoverState):
         return self.cover.default
 
     def tilt_with_presence(self, degrees: int) -> int:
-        """Determine state for tilted blinds with occupants."""
-        # Only continue if sun position is valid
+        """Determine state for tilted blinds with occupants.
+    
+        Tilt is only applied when brightness (lux or irradiance) exceeds the configured threshold.
+        If conditions are not met, the blind remains at the default position.
+        """
+    
+        # Sun not in valid position → fallback
         if not self.cover.valid:
             return self.cover.default
     
-        # Check if the conditions allow for automatic adjustment
-        if (
-            self.climate_data.lux  # bright enough according to lux sensor
-            or self.climate_data.irradiance  # sufficient irradiance
-            or not self.climate_data.is_sunny  # cloudy or no weather check
-        ):
+        # Only reduce glare if it's bright enough
+        if self.climate_data.lux or self.climate_data.irradiance:
             if self.climate_data.is_summer:
-                # If it's summer, return 45 degrees
+                # In summer: use fixed 45° angle
                 return 45 / degrees * 100
-            # Default behavior: calculated tilt based on sun angle
+            # In other seasons: calculate angle dynamically
             return super().get_state()
     
-        # Fallback if too dark or no sufficient input: return default position
+        # Not bright enough → leave at default (e.g. fully open)
         return self.cover.default
 
     def tilt_without_presence(self, degrees: int) -> int:
